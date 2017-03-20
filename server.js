@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const morgan = require('morgan');
@@ -48,6 +47,26 @@ app.post('/shopping-list', jsonParser, (req, res) => {
 });
 
 
+// when new recipe added, ensure has required fields. if not,
+// log error and return 400 status code with hepful message.
+// if okay, add new item, and return it with a status 201.
+
+app.post('/recipes', jsonParser, (req, res) => {
+  // ensure `name` and `budget` are in request body
+  const requiredFields = ['name', 'ingredients'];
+  for (let i=0; i<requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!(field in req.body)) {
+      const message = `Missing \`${field}\` in request body`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+  const item = Recipes.create(req.body.name, req.body.ingredients);
+  res.status(201).json(item);
+});
+
+
 app.get('/recipes', (req, res) => {
   res.json(Recipes.get());
 })
@@ -55,3 +74,11 @@ app.get('/recipes', (req, res) => {
 app.listen(process.env.PORT || 8080, () => {
   console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
 });
+
+
+//for postman: use headers: content-type: application/json, CODE for recipe PUT ===
+//then send POST from postman and it works! 
+{
+  "name": "tuna melt",
+  "ingredients": ["2 can tuna", "mayo"]
+}
